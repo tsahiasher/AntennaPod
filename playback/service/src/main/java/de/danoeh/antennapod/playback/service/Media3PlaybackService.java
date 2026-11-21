@@ -327,6 +327,12 @@ public class Media3PlaybackService extends MediaLibraryService {
             } else if (customCommand.customAction.equals(SESSION_COMMAND_EXTEND_SLEEP_TIMER.customAction)) {
                 extendSleepTimer(MediaLibrarySessionCallback.getLong(args, 0));
                 return Futures.immediateFuture(new SessionResult(SessionResult.RESULT_SUCCESS));
+            } else if (customCommand.customAction.equals(SESSION_COMMAND_SKIP_AND_DELETE_EPISODE.customAction)) {
+                if (currentPlayable != null) {
+                    saveCurrentPosition();
+                    startNextInQueue(currentPlayable, true, false, true);
+                }
+                return Futures.immediateFuture(new SessionResult(SessionResult.RESULT_SUCCESS));
             }
             return super.onCustomCommand(session, controller, customCommand, args);
         }
@@ -672,6 +678,12 @@ public class Media3PlaybackService extends MediaLibraryService {
 
     private void updateDatabaseAfterPlayback(FeedMedia media, int startPosition,
                                              boolean ended, boolean skipped, boolean playingNext) {
+        updateDatabaseAfterPlayback(media, startPosition, ended, skipped, playingNext, false);
+    }
+
+    private void updateDatabaseAfterPlayback(FeedMedia media, int startPosition,
+                                             boolean ended, boolean skipped, boolean playingNext,
+                                             boolean deleteAndMarkPlayed) {
         if (media == null) {
             return;
         }
@@ -681,21 +693,24 @@ public class Media3PlaybackService extends MediaLibraryService {
         boolean almostEnded = media.getDuration() > 0
                 && media.getPosition() >= media.getDuration() - smartMarkAsPlayedSecs * 1000;
 
-        SynchronizationQueue.getInstance().enqueueEpisodePlayed(media, startPosition, ended || almostEnded);
+        SynchronizationQueue.getInstance().enqueueEpisodePlayed(media, startPosition,
+                ended || almostEnded || deleteAndMarkPlayed);
         if (item != null) {
-            if (ended || almostEnded) {
+            if (ended || almostEnded || deleteAndMarkPlayed) {
                 DBWriter.markItemsPlayed(FeedItem.PLAYED, true, Collections.singletonList(item));
-            }
-            if (ended || almostEnded || (skipped && !UserPreferences.shouldSkipKeepEpisode())) {
                 DBWriter.removeQueueItem(this, ended, item);
-                FeedPreferences.AutoDeleteAction action = item.getFeed().getPreferences().getCurrentAutoDelete();
-                boolean autoDeleteEnabledGlobally = UserPreferences.isAutoDelete()
-                        && (!item.getFeed().isLocalFeed() || UserPreferences.isAutoDeleteLocal());
-                boolean shouldAutoDelete = action == FeedPreferences.AutoDeleteAction.ALWAYS
-                        || (action == FeedPreferences.AutoDeleteAction.GLOBAL && autoDeleteEnabledGlobally);
-                if (shouldAutoDelete && (!item.isTagged(FeedItem.TAG_FAVORITE)
-                        || !UserPreferences.shouldFavoriteKeepEpisode())) {
+                if (deleteAndMarkPlayed) {
                     DBWriter.deleteFeedMediaOfItem(this, media);
+                } else {
+                    FeedPreferences.AutoDeleteAction action = item.getFeed().getPreferences().getCurrentAutoDelete();
+                    boolean autoDeleteEnabledGlobally = UserPreferences.isAutoDelete()
+                            && (!item.getFeed().isLocalFeed() || UserPreferences.isAutoDeleteLocal());
+                    boolean shouldAutoDelete = action == FeedPreferences.AutoDeleteAction.ALWAYS
+                            || (action == FeedPreferences.AutoDeleteAction.GLOBAL && autoDeleteEnabledGlobally);
+                    if (shouldAutoDelete && (!item.isTagged(FeedItem.TAG_FAVORITE)
+                            || !UserPreferences.shouldFavoriteKeepEpisode())) {
+                        DBWriter.deleteFeedMediaOfItem(this, media);
+                    }
                 }
             }
         }
@@ -829,6 +844,11 @@ public class Media3PlaybackService extends MediaLibraryService {
      */
     @UnstableApi
     private void startNextInQueue(FeedMedia media, boolean wasSkipped, boolean ended) {
+        startNextInQueue(media, wasSkipped, ended, false);
+    }
+
+    @UnstableApi
+    private void startNextInQueue(FeedMedia media, boolean wasSkipped, boolean ended, boolean deleteAndMarkPlayed) {
         if (queueLoaderDisposable != null) {
             queueLoaderDisposable.dispose();
         }
@@ -840,10 +860,11 @@ public class Media3PlaybackService extends MediaLibraryService {
             return;
         }
         int startPosition = playbackStartPosition;
+        boolean wasPlaying = player != null && player.getPlayWhenReady();
         queueLoaderDisposable = Maybe.fromCallable(() -> {
             FeedItem nextItem = DBReader.getNextInQueue(item);
             boolean hasNext = nextItem != null && nextItem.getMedia() != null;
-            updateDatabaseAfterPlayback(media, startPosition, ended, wasSkipped, hasNext);
+            updateDatabaseAfterPlayback(media, startPosition, ended, wasSkipped, hasNext, deleteAndMarkPlayed);
             if (hasNext) {
                 return new Pair<>(nextItem.getMedia(),
                         MediaItemAdapter.fromPlayable(Media3PlaybackService.this, nextItem.getMedia(), false));
@@ -860,7 +881,7 @@ public class Media3PlaybackService extends MediaLibraryService {
                                 return;
                             }
                             switchToPlayable(nextMedia);
-                            player.setPlayWhenReady(UserPreferences.isFollowQueue());
+                            player.setPlayWhenReady(deleteAndMarkPlayed ? wasPlaying : UserPreferences.isFollowQueue());
                             player.setMediaItem(nextMediaItem, SkipUtils.skipIntroIfNecessary(this, nextMedia));
                             player.prepare();
                         },

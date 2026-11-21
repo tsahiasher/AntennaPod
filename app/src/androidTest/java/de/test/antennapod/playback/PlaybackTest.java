@@ -150,11 +150,6 @@ public class PlaybackTest {
         prefs.edit().putBoolean(UserPreferences.PREF_FOLLOW_QUEUE, value).commit();
     }
 
-    protected void setSkipKeepsEpisodePreference(boolean value) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        prefs.edit().putBoolean(UserPreferences.PREF_SKIP_KEEPS_EPISODE, value).commit();
-    }
-
     protected void setSmartMarkAsPlayedPreference(int smartMarkAsPlayedSecs) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         prefs.edit().putString(UserPreferences.PREF_SMART_MARK_AS_PLAYED_SECS,
@@ -228,8 +223,6 @@ public class PlaybackTest {
 
     protected void doTestSmartMarkAsPlayed_Skip_ForEpisode(int itemIdxNegAllowed) throws Exception {
         setSmartMarkAsPlayedPreference(60);
-        // ensure when an episode is skipped, it is removed due to smart as played
-        setSkipKeepsEpisodePreference(false);
         uiTestUtils.setMediaFileName("30sec.mp3");
         uiTestUtils.addLocalFeedData(true);
 
