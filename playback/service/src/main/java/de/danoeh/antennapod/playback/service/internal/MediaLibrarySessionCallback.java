@@ -70,6 +70,8 @@ public class MediaLibrarySessionCallback implements MediaLibraryService.MediaLib
             = new SessionCommand("next_chapter", Bundle.EMPTY);
     protected static final SessionCommand SESSION_COMMAND_SKIP_EPISODE
             = new SessionCommand("skip_episode", Bundle.EMPTY);
+    public static final SessionCommand SESSION_COMMAND_SKIP_AND_DELETE_EPISODE
+            = new SessionCommand("skip_and_delete_episode", Bundle.EMPTY);
     public static final SessionCommand SESSION_COMMAND_SKIP_SILENCE
             = new SessionCommand("skip_silence", Bundle.EMPTY);
     public static final SessionCommand SESSION_COMMAND_SET_SLEEP_TIMER
@@ -119,6 +121,7 @@ public class MediaLibrarySessionCallback implements MediaLibraryService.MediaLib
                 .add(SESSION_COMMAND_PLAYBACK_SPEED)
                 .add(SESSION_COMMAND_NEXT_CHAPTER)
                 .add(SESSION_COMMAND_SKIP_EPISODE)
+                .add(SESSION_COMMAND_SKIP_AND_DELETE_EPISODE)
                 .add(SESSION_COMMAND_SKIP_SILENCE)
                 .add(SESSION_COMMAND_SET_SLEEP_TIMER)
                 .add(SESSION_COMMAND_DISABLE_SLEEP_TIMER)

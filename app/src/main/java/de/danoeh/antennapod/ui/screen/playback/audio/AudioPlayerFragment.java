@@ -28,6 +28,7 @@ import de.danoeh.antennapod.model.feed.Feed;
 import de.danoeh.antennapod.playback.service.PlaybackController;
 import de.danoeh.antennapod.playback.service.PlaybackService;
 import de.danoeh.antennapod.playback.service.PlaybackServiceStarter;
+import de.danoeh.antennapod.playback.service.internal.MediaLibrarySessionCallback;
 import de.danoeh.antennapod.storage.database.DBReader;
 import de.danoeh.antennapod.storage.database.DBWriter;
 import de.danoeh.antennapod.storage.preferences.PlaybackPreferences;
@@ -254,6 +255,14 @@ public class AudioPlayerFragment extends Fragment implements
                 getActivity().sendBroadcast(
                         MediaButtonStarter.createIntent(getContext(), KeyEvent.KEYCODE_MEDIA_NEXT));
             }
+        });
+        butSkip.setOnLongClickListener(v -> {
+            if (BuildConfig.USE_MEDIA3_PLAYBACK_SERVICE) {
+                PlaybackController.bindToMedia3Service(getContext(), controller ->
+                        controller.sendCustomCommand(
+                                MediaLibrarySessionCallback.SESSION_COMMAND_SKIP_AND_DELETE_EPISODE, Bundle.EMPTY));
+            }
+            return true;
         });
     }
 

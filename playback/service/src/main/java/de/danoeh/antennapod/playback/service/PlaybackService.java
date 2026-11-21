@@ -1205,8 +1205,7 @@ public class PlaybackService extends MediaBrowserServiceCompat {
         SynchronizationQueue.getInstance().enqueueEpisodePlayed(media, -1, ended || almostEnded);
         if (item != null) {
             if (ended || almostEnded
-                    || autoSkipped
-                    || (skipped && !UserPreferences.shouldSkipKeepEpisode())) {
+                    || autoSkipped) {
                 // only mark the item as played if we're not keeping it anyways
                 positionJustResetAfterPlayback = item.getIdentifyingValue();
                 DBWriter.markItemsPlayed(FeedItem.PLAYED, ended || (skipped && almostEnded),
