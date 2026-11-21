@@ -107,8 +107,19 @@ public class DBWriter {
                 return;
             }
             deleteFeedMediaSynchronous(context, media);
-            EventBus.getDefault().post(new FeedItemEvent(media.getItem() != null
-                    ? Collections.singletonList(media.getItem()) : Collections.emptyList(), false));
+            FeedItem item = media.getItem();
+            if (item != null) {
+                if (item.hasMedia()) {
+                    item.getMedia().setPosition(0);
+                }
+                item.setPlayState(FeedItem.PLAYED);
+                PodDBAdapter adapter = PodDBAdapter.getInstance();
+                adapter.open();
+                adapter.setFeedItemsRead(FeedItem.PLAYED, true, Collections.singletonList(item));
+                adapter.close();
+            }
+            EventBus.getDefault().post(new FeedItemEvent(item != null
+                    ? Collections.singletonList(item) : Collections.emptyList(), item != null));
             if (UserPreferences.shouldDeleteRemoveFromQueue()) {
                 DBWriter.removeQueueItemSynchronous(context, false, media.getItemId());
             }
