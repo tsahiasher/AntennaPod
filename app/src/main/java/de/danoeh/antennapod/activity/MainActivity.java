@@ -80,7 +80,6 @@ import de.danoeh.antennapod.ui.screen.queue.QueueFragment;
 import de.danoeh.antennapod.ui.screen.rating.RatingDialogManager;
 import de.danoeh.antennapod.ui.screen.subscriptions.SubscriptionFragment;
 import de.danoeh.antennapod.ui.statistics.StatisticsFragment;
-import de.danoeh.antennapod.ui.common.BottomSheetBackPressedCallback;
 import de.danoeh.antennapod.ui.common.LockableBottomSheetBehavior;
 import org.apache.commons.lang3.ArrayUtils;
 import org.greenrobot.eventbus.EventBus;
@@ -110,7 +109,7 @@ public class MainActivity extends CastEnabledActivity implements NavigationToolb
     private BottomNavigation bottomNavigation;
     private View navDrawer;
     private LockableBottomSheetBehavior<FragmentContainerView> sheetBehavior;
-    private BottomSheetBackPressedCallback bottomSheetBackPressedCallback;
+    private OnBackPressedCallback bottomSheetBackPressedCallback;
     private OnBackPressedCallback openDefaultPageBackPressedCallback;
     private int lastTheme = 0;
     private Insets systemBarInsets = Insets.NONE;
@@ -211,7 +210,12 @@ public class MainActivity extends CastEnabledActivity implements NavigationToolb
         sheetBehavior = (LockableBottomSheetBehavior<FragmentContainerView>) BottomSheetBehavior.from(bottomSheet);
         sheetBehavior.setHideable(false);
         sheetBehavior.addBottomSheetCallback(bottomSheetCallback);
-        bottomSheetBackPressedCallback = new BottomSheetBackPressedCallback(false, sheetBehavior, bottomSheet);
+        bottomSheetBackPressedCallback = new OnBackPressedCallback(false) {
+            @Override
+            public void handleOnBackPressed() {
+                moveTaskToBack(true);
+            }
+        };
 
         FeedUpdateManager.getInstance().restartUpdateAlarm(this, false);
         SynchronizationQueue.getInstance().syncIfNotSyncedRecently();
