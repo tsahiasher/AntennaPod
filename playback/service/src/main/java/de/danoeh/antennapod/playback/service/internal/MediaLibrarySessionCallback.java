@@ -46,6 +46,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 public class MediaLibrarySessionCallback implements MediaLibraryService.MediaLibrarySession.Callback {
     private static final String TAG = "M3SessionCallback";
@@ -221,6 +222,9 @@ public class MediaLibrarySessionCallback implements MediaLibraryService.MediaLib
             } else if (fromWidget && keyCode == KeyEvent.KEYCODE_MEDIA_NEXT) {
                 session.getPlayer().seekToNextMediaItem();
                 return true;
+            } else if (!fromWidget && keyCode == KeyEvent.KEYCODE_MEDIA_PLAY
+                    && !session.getPlayer().isPlaying()) {
+                return true;
             }
         }
         return false;
@@ -339,6 +343,9 @@ public class MediaLibrarySessionCallback implements MediaLibraryService.MediaLib
     public ListenableFuture<MediaSession.MediaItemsWithStartPosition> onPlaybackResumption(
             @NonNull MediaSession mediaSession, @NonNull MediaSession.ControllerInfo controller) {
         Log.d(TAG, "onPlaybackResumption() called");
+        if (controller.getPackageName().toLowerCase(Locale.ROOT).contains("bluetooth")) {
+            return Futures.immediateFailedFuture(new UnsupportedOperationException());
+        }
         return playbackResumption(false);
     }
 
