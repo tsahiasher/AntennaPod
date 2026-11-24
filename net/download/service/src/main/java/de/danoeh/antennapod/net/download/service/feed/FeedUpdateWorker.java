@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -80,7 +81,7 @@ public class FeedUpdateWorker extends Worker {
                     continue;
                 }
                 if (isAutomaticRefresh && isAutomaticRefreshEnabled
-                        && feed.getLastRefreshAttempt() > System.currentTimeMillis() - JOB_SCHEDULE_TIME_VARIATION
+                        && feed.getLastRefreshAttempt() > System.currentTimeMillis() + JOB_SCHEDULE_TIME_VARIATION
                             - TimeUnit.MINUTES.toMillis(UserPreferences.getUpdateInterval())) {
                     // Recently updated, no need to automatically check again
                     itr.remove();
@@ -113,7 +114,11 @@ public class FeedUpdateWorker extends Worker {
         refreshFeeds(toUpdate,  force);
 
         NonSubscribedFeedsCleaner.deleteOldNonSubscribedFeeds(getApplicationContext());
-        AutoDownloadManager.getInstance().autodownloadUndownloadedItems(getApplicationContext());
+        try {
+            AutoDownloadManager.getInstance().autodownloadUndownloadedItems(getApplicationContext()).get();
+        } catch (InterruptedException | ExecutionException e) {
+            Log.e(TAG, "Auto download failed", e);
+        }
         notificationManager.cancel(R.id.notification_updating_feeds);
         SynchronizationQueue.getInstance().syncImmediately();
         return Result.success();
