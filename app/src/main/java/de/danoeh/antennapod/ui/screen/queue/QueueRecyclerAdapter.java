@@ -9,6 +9,10 @@ import android.view.View;
 
 import androidx.fragment.app.FragmentActivity;
 import de.danoeh.antennapod.R;
+import de.danoeh.antennapod.actionbutton.PlayActionButton;
+import de.danoeh.antennapod.actionbutton.PlayLocalActionButton;
+import de.danoeh.antennapod.actionbutton.StreamActionButton;
+import de.danoeh.antennapod.model.feed.FeedItem;
 import de.danoeh.antennapod.ui.episodeslist.EpisodeItemListAdapter;
 import de.danoeh.antennapod.storage.preferences.UserPreferences;
 import de.danoeh.antennapod.ui.swipeactions.SwipeActions;
@@ -68,9 +72,33 @@ public class QueueRecyclerAdapter extends EpisodeItemListAdapter {
         if (inActionMode()) {
             holder.dragHandle.setOnTouchListener(null);
             holder.coverHolder.setOnTouchListener(null);
+        } else {
+            FeedItem item = holder.getFeedItem();
+            if (item != null && item.hasMedia()) {
+                holder.secondaryActionButton.setOnClickListener(v -> playEpisode(item));
+            }
         }
 
         holder.isInQueue.setVisibility(View.GONE);
+    }
+
+    @Override
+    protected void onItemClick(FeedItem item) {
+        if (item.hasMedia()) {
+            playEpisode(item);
+        } else {
+            super.onItemClick(item);
+        }
+    }
+
+    private void playEpisode(FeedItem item) {
+        if (item.getFeed().isLocalFeed()) {
+            new PlayLocalActionButton(item).onClick(getActivity());
+        } else if (item.isDownloaded()) {
+            new PlayActionButton(item).onClick(getActivity());
+        } else {
+            new StreamActionButton(item).onClick(getActivity());
+        }
     }
 
     @Override
