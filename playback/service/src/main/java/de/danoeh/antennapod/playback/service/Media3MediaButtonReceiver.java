@@ -40,6 +40,10 @@ public class Media3MediaButtonReceiver extends MediaButtonReceiver {
             return;
         }
 
+        if (keyEvent.getKeyCode() == KeyEvent.KEYCODE_MEDIA_PLAY) {
+            return;
+        }
+
         if (!isPlayKey(keyEvent.getKeyCode())
                 || PlaybackPreferences.getCurrentlyPlayingFeedMediaId() != PlaybackPreferences.NO_MEDIA_PLAYING) {
             super.onReceive(context, intent);
