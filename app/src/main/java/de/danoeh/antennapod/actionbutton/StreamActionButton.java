@@ -5,7 +5,9 @@ import android.content.Context;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.StringRes;
 
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import de.danoeh.antennapod.R;
+import de.danoeh.antennapod.activity.MainActivity;
 import de.danoeh.antennapod.model.feed.FeedItem;
 import de.danoeh.antennapod.model.feed.FeedMedia;
 import de.danoeh.antennapod.model.playback.MediaType;
@@ -45,6 +47,10 @@ public class StreamActionButton extends ItemActionButton {
 
         if (media.getMediaType() == MediaType.VIDEO) {
             context.startActivity(PlaybackService.getPlayerActivityIntent(context, media));
+        } else if (context instanceof MainActivity) {
+            MainActivity mainActivity = (MainActivity) context;
+            mainActivity.setPlayerVisible(true);
+            mainActivity.getBottomSheet().setState(BottomSheetBehavior.STATE_EXPANDED);
         }
     }
 }

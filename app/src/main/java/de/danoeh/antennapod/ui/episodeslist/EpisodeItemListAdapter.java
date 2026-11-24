@@ -22,6 +22,8 @@ import java.util.Collections;
 import java.util.List;
 
 import de.danoeh.antennapod.R;
+import de.danoeh.antennapod.actionbutton.PlayActionButton;
+import de.danoeh.antennapod.actionbutton.PlayLocalActionButton;
 import de.danoeh.antennapod.activity.MainActivity;
 import de.danoeh.antennapod.model.feed.FeedItem;
 import de.danoeh.antennapod.ui.screen.episode.ItemPagerFragment;
@@ -87,17 +89,7 @@ public class EpisodeItemListAdapter extends SelectableAdapter<EpisodeItemViewHol
 
         holder.itemView.setOnClickListener(v -> {
             if (!inActionMode()) {
-                if (mainActivityRef.get() instanceof MainActivity) {
-                    ((MainActivity) mainActivityRef.get())
-                            .loadChildFragment(ItemPagerFragment.newInstance(episodes, item));
-                } else {
-                    ItemPagerFragment fragment = ItemPagerFragment.newInstance(episodes, item);
-                    mainActivityRef.get().getSupportFragmentManager()
-                            .beginTransaction()
-                            .replace(R.id.fragmentContainer, fragment, "Items")
-                            .addToBackStack("Items")
-                            .commitAllowingStateLoss();
-                }
+                onItemClick(item);
             } else {
                 toggleSelection(holder.getBindingAdapterPosition());
             }
@@ -130,6 +122,31 @@ public class EpisodeItemListAdapter extends SelectableAdapter<EpisodeItemViewHol
 
         afterBindViewHolder(holder, pos);
         holder.hideSeparatorIfNecessary();
+    }
+
+    protected void onItemClick(FeedItem item) {
+        FragmentActivity activity = mainActivityRef.get();
+        if (activity == null) {
+            return;
+        }
+        if (item.hasMedia() && (item.isDownloaded() || item.getFeed().isLocalFeed())) {
+            if (item.getFeed().isLocalFeed()) {
+                new PlayLocalActionButton(item).onClick(activity);
+            } else {
+                new PlayActionButton(item).onClick(activity);
+            }
+            return;
+        }
+        if (activity instanceof MainActivity) {
+            ((MainActivity) activity).loadChildFragment(ItemPagerFragment.newInstance(episodes, item));
+        } else {
+            ItemPagerFragment fragment = ItemPagerFragment.newInstance(episodes, item);
+            activity.getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragmentContainer, fragment, "Items")
+                    .addToBackStack("Items")
+                    .commitAllowingStateLoss();
+        }
     }
 
     protected void beforeBindViewHolder(EpisodeItemViewHolder holder, int pos) {
