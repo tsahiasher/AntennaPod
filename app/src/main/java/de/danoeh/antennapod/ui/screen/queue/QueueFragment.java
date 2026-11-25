@@ -1,7 +1,6 @@
 package de.danoeh.antennapod.ui.screen.queue;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
@@ -45,7 +44,6 @@ import java.util.List;
 import de.danoeh.antennapod.R;
 import de.danoeh.antennapod.activity.MainActivity;
 import de.danoeh.antennapod.ui.episodeslist.EpisodeItemListAdapter;
-import de.danoeh.antennapod.ui.common.ConfirmationDialog;
 import de.danoeh.antennapod.ui.MenuItemUtils;
 import de.danoeh.antennapod.storage.database.DBReader;
 import de.danoeh.antennapod.storage.database.DBWriter;
@@ -299,21 +297,6 @@ public class QueueFragment extends Fragment implements MaterialToolbar.OnMenuIte
             return true;
         } else if (itemId == R.id.refresh_item) {
             FeedUpdateManager.getInstance().runOnceOrAsk(requireContext());
-            return true;
-        } else if (itemId == R.id.clear_queue) {
-            // make sure the user really wants to clear the queue
-            ConfirmationDialog conDialog = new ConfirmationDialog(getActivity(),
-                    R.string.clear_queue_label,
-                    R.string.clear_queue_confirmation_msg) {
-
-                @Override
-                public void onConfirmButtonPressed(
-                        DialogInterface dialog) {
-                    dialog.dismiss();
-                    DBWriter.clearQueue();
-                }
-            };
-            conDialog.createNewDialog().show();
             return true;
         } else if (itemId == R.id.action_search) {
             ((MainActivity) getActivity()).loadChildFragment(
