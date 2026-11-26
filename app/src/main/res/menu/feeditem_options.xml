@@ -3,18 +3,6 @@
       xmlns:custom="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/play_item"
-        android:icon="@drawable/ic_play_24dp"
-        custom:showAsAction="always"
-        android:title="@string/play_label" />
-
-    <item
-        android:id="@+id/remove_item"
-        android:icon="@drawable/ic_delete"
-        custom:showAsAction="always"
-        android:title="@string/delete_label" />
-
-    <item
         android:id="@id/skip_episode_item"
         android:title="@string/skip_episode_label"
         custom:showAsAction="collapseActionView">

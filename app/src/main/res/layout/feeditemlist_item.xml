@@ -165,6 +165,16 @@
 
             </LinearLayout>
 
+            <TextView
+                android:id="@+id/txtvFeedName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textAlignment="viewStart"
+                style="@style/AntennaPod.TextView.FeedListItemSecondaryTitle"
+                tools:text="Podcast Name" />
+
             <!--
                 Warning: android:contentDescription is set to an empty string.
                 The title is read as contentDescription of left_padding to have it read first.

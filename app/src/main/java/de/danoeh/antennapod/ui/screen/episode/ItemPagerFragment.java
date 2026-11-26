@@ -21,9 +21,6 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import de.danoeh.antennapod.R;
-import de.danoeh.antennapod.actionbutton.PlayActionButton;
-import de.danoeh.antennapod.actionbutton.PlayLocalActionButton;
-import de.danoeh.antennapod.actionbutton.StreamActionButton;
 import de.danoeh.antennapod.event.FeedItemEvent;
 import de.danoeh.antennapod.model.feed.FeedItem;
 import de.danoeh.antennapod.storage.database.DBReader;
@@ -163,14 +160,6 @@ public class ItemPagerFragment extends Fragment implements MaterialToolbar.OnMen
             FeedItemMenuHandler.onPrepareMenu(toolbar.getMenu(), Collections.singletonList(item),
                     R.id.mark_read_item, R.id.visit_website_item);
         }
-        MenuItem playItem = toolbar.getMenu().findItem(R.id.play_item);
-        if (playItem != null) {
-            playItem.setVisible(item.hasMedia());
-        }
-        MenuItem deleteItem = toolbar.getMenu().findItem(R.id.remove_item);
-        if (deleteItem != null) {
-            deleteItem.setVisible(item.isDownloaded());
-        }
     }
 
     @Override
@@ -179,15 +168,6 @@ public class ItemPagerFragment extends Fragment implements MaterialToolbar.OnMen
             openPodcast();
             return true;
         } else if (item == null) {
-            return true;
-        } else if (menuItem.getItemId() == R.id.play_item) {
-            if (item.getFeed().isLocalFeed()) {
-                new PlayLocalActionButton(item).onClick(requireContext());
-            } else if (item.isDownloaded()) {
-                new PlayActionButton(item).onClick(requireContext());
-            } else {
-                new StreamActionButton(item).onClick(requireContext());
-            }
             return true;
         }
         return FeedItemMenuHandler.onMenuItemClicked(this, menuItem.getItemId(), item);
