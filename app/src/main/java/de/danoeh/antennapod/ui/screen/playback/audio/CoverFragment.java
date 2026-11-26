@@ -225,8 +225,11 @@ public class CoverFragment extends Fragment {
 
     private void refreshChapterData(int chapterIndex) {
         List<Chapter> chapters = media.getChapters();
-        if (chapterIndex > -1 && chapters != null) {
-            if (media.getPosition() > media.getDuration() || chapterIndex >= chapters.size() - 1) {
+        if (chapters != null && !chapters.isEmpty()) {
+            if (chapterIndex < 0) {
+                displayedChapterIndex = -1;
+                viewBinding.butNextChapter.setVisibility(View.VISIBLE);
+            } else if (media.getPosition() > media.getDuration() || chapterIndex >= chapters.size() - 1) {
                 displayedChapterIndex = chapters.size() - 1;
                 viewBinding.butNextChapter.setVisibility(View.INVISIBLE);
             } else {
@@ -246,14 +249,13 @@ public class CoverFragment extends Fragment {
     }
 
     private void seekToPrevChapter() {
-        Chapter curr = getCurrentChapter();
-
-        if (curr == null || displayedChapterIndex == -1) {
+        if (media == null || media.getChapters() == null || media.getChapters().isEmpty()) {
             return;
         }
+        Chapter curr = getCurrentChapter();
 
         PlaybackController.bindToMedia3Service(getActivity(), controller -> {
-            if (displayedChapterIndex < 1) {
+            if (curr == null || displayedChapterIndex < 1) {
                 controller.seekTo(0);
             } else if ((controller.getCurrentPosition() - 10000 * controller.getPlaybackParameters().speed)
                     < curr.getStart()) {
@@ -267,7 +269,7 @@ public class CoverFragment extends Fragment {
 
     private void seekToNextChapter() {
         if (media == null || media.getChapters() == null
-                || displayedChapterIndex == -1 || displayedChapterIndex + 1 >= media.getChapters().size()) {
+                || displayedChapterIndex + 1 >= media.getChapters().size()) {
             return;
         }
 
@@ -310,7 +312,7 @@ public class CoverFragment extends Fragment {
             return;
         }
         int newChapterIndex = Chapter.getAfterPosition(media.getChapters(), event.getPosition());
-        if (newChapterIndex > -1 && newChapterIndex != displayedChapterIndex) {
+        if (newChapterIndex != displayedChapterIndex) {
             refreshChapterData(newChapterIndex);
         }
     }
