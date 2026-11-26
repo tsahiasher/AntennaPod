@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.List;
 
 import de.danoeh.antennapod.R;
+import de.danoeh.antennapod.activity.MainActivity;
 import de.danoeh.antennapod.event.MessageEvent;
 import de.danoeh.antennapod.event.playback.PlaybackServiceEvent;
 import de.danoeh.antennapod.model.feed.Feed;
@@ -32,6 +33,7 @@ import de.danoeh.antennapod.model.feed.FeedItem;
 import de.danoeh.antennapod.model.feed.FeedMedia;
 import de.danoeh.antennapod.storage.preferences.UserPreferences;
 import de.danoeh.antennapod.ui.appstartintent.MediaButtonStarter;
+import de.danoeh.antennapod.ui.screen.episode.ItemPagerFragment;
 import de.danoeh.antennapod.ui.view.LocalDeleteModal;
 import org.greenrobot.eventbus.EventBus;
 
@@ -183,7 +185,12 @@ public class FeedItemMenuHandler {
                                             @NonNull FeedItem selectedItem) {
 
         @NonNull Context context = fragment.requireContext();
-        if (menuItemId == R.id.skip_episode_item) {
+        if (menuItemId == R.id.episode_notes_item) {
+            if (fragment.getActivity() instanceof MainActivity) {
+                ((MainActivity) fragment.getActivity())
+                        .loadChildFragment(ItemPagerFragment.newInstance(selectedItem.getId()));
+            }
+        } else if (menuItemId == R.id.skip_episode_item) {
             context.sendBroadcast(MediaButtonStarter.createIntent(context, KeyEvent.KEYCODE_MEDIA_NEXT));
         } else if (menuItemId == R.id.remove_item) {
             LocalDeleteModal.showLocalFeedDeleteWarningIfNecessary(context, Arrays.asList(selectedItem),
